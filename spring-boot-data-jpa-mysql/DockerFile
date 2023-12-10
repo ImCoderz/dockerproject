@@ -1,0 +1,25 @@
+# Stage 1: Build the application
+FROM maven:3.8.4-openjdk-17 as build
+#Create a user
+RUN groupadd -r mygroup && useradd -r -g mygroup -m -d /home/myuser myuser
+WORKDIR /home/myuser
+
+WORKDIR /workspace/app
+
+COPY pom.xml .
+COPY src src
+RUN mvn clean install -DskipTests
+RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+# Stage 2: Create the final image with MySQL integration
+FROM openjdk:22-ea-24-jdk-slim
+VOLUME /tmp
+ARG DEPENDENCY=/workspace/app/target/dependency
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes/application.properties /app/application.properties
+# Add MySQL JDBC driver
+COPY --from=build /workspace/app/src/main/resources/mysql-connector-java-*.jar /app/lib/mysql-connector-java.jar
+
+# Set the entry point
+ENTRYPOINT ["java","-cp","app:app/lib/*", "com.bezkoder.spring.datajpa.SpringBootDataJpaApplication"]

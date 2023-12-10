@@ -1,0 +1,41 @@
+
+#remplace localhost:5000 by imcoderz
+
+version: "3"
+services:
+  mysql-service:
+    image: localhost:5000/mysql:8.2.0
+    container_name: mysql-container
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    networks:
+      - myapp-network
+  backend-app-service:
+    image: localhost:5000/backend-image:1.0.0
+    container_name: backend-container
+    ports:
+      - 8080:8080
+    networks:
+      - myapp-network
+    depends_on:
+      - mysql-service
+  frontend-app-service:
+    image: localhost:5000/frontend-image:1.0.0
+    container_name: frontend-container
+    ports:
+      - 4200:80
+    networks:
+      - myapp-network
+    depends_on:
+      - backend-app-service
+
+networks:
+  myapp-network:
+    driver: bridge
+volumes:
+  mysql-volume:
+    driver: local

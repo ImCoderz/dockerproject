@@ -1,0 +1,20 @@
+# test service account
+apiVersion: v1
+kind: Pod
+metadata:
+  name: output-pod
+spec:
+  containers:
+  - name: output-container
+    image: alpine
+    command: ["/bin/sh", "-c"]
+    args: ["echo 'Hello, this is a test pod!' && sleep 3600"]
+    resources:
+            limits:
+              cpu: "500m"  
+              memory: "512Mi"  
+            requests:
+              cpu: "100m"  
+
+
+              

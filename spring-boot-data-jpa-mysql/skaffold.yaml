@@ -1,0 +1,21 @@
+apiVersion: skaffold/v2beta21
+kind: Config
+metadata:
+  name: my-app
+build:
+  artifacts:
+    - image: localhost:5000/backend-image
+      context: .
+      docker:
+        dockerfile: Dockerfile
+      tagPolicy:
+        gitCommit: true  
+deploy:
+  kubectl:
+    manifests:
+      - ../K8s/backend-app.yaml
+push:
+  artifacts:
+    - image: localhost:5000/backend-image
+      pusher:
+        local: true  
